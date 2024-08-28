@@ -59,6 +59,30 @@ namespace ANode
             y = v.y;
         }
 
+        #region 비교 구분 
+        public override bool Equals(object obj)
+        {
+            if (obj is SerializableVector2Int sobj)
+            {
+                return sobj.x == x && sobj.y == y;
+            }
+
+            return false;
+        }
+        public static bool operator ==(SerializableVector2Int p1, SerializableVector2Int p2)
+        {
+            if (ReferenceEquals(p1, null))
+                return ReferenceEquals(p2, null);
+
+            return p1.Equals(p2);
+        }
+
+        public static bool operator !=(SerializableVector2Int p1, SerializableVector2Int p2)
+        {
+            return !(p1 == p2);
+        }        
+        #endregion
+        
         public Vector2Int Vector2Int()
         {
             return new Vector2Int(x, y);

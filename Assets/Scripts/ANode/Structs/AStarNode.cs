@@ -21,7 +21,10 @@ namespace ANode
         public SerializableVector3 position;    // 월드 좌표
         public SerializableVector2Int grid;     // 그리드 내 위치
         public float Cost = 1;
-        public float slope;         // 경사도
+        public float slope;                     // 경사도
+        
+        [NonSerialized]
+        public int holdState = 0;               // 이미 차지하고 있는 객체 ID
     }
 
 
@@ -31,8 +34,13 @@ namespace ANode
     public class SearchNodeData
     {
         public InfoNode Node;
-        public SearchNodeData parent;
-        public float gCost, hCost;        
-        public float fCost { get { return gCost + hCost; } }
+        public SearchNodeData Parent;
+        public float GCost, HCost;        
+        public float FCost { get { return GCost + HCost; } }
+
+        public SearchNodeData(InfoNode node)
+        {
+            Node = node;
+        }
     }
 }

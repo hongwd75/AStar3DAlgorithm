@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
@@ -54,48 +55,72 @@ namespace ANode
             Debug.Log($"Data saved to {filePath} in binary format");            
         }
 #endif
-        public void LoadFrom(string filename)
+        public bool LoadFrom(string filename)
         {
-            string _fileName = $"data/stages/{Path.GetFileNameWithoutExtension(filename)}"; // 확장자 제외
-
-            TextAsset textAsset = Resources.Load<TextAsset>(_fileName);
-
-            if (textAsset != null)
+            try
             {
-                byte[] binaryData = textAsset.bytes;
+                string _fileName = $"data/stages/{Path.GetFileNameWithoutExtension(filename)}"; // 확장자 제외
 
-                // 바이너리 데이터를 사용하여 원하는 작업 수행
-                using (MemoryStream stream = new MemoryStream(binaryData))
+                TextAsset textAsset = Resources.Load<TextAsset>(_fileName);
+
+                if (textAsset != null)
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    stream.Position = 0; // 스트림의 시작 위치를 0으로 설정
-                    StageMapData loadedData  = (StageMapData)formatter.Deserialize(stream);
-                    this.nodeSize = loadedData.nodeSize;
-                    this.slopeTreshold = loadedData.slopeTreshold;
-                    this.spawnPosition = loadedData.spawnPosition;
-                    this.MapNodeSize = loadedData.MapNodeSize;
-                    this.Mapstartposition  = loadedData.Mapstartposition;
-                    this.serializedTileNodes = loadedData.serializedTileNodes;
-                }
-            }
-            else
-            {
-                Debug.LogError("파일을 찾을 수 없습니다: " + _fileName);
-                return;
-            }
-            
-            tileNodes = new InfoNode[MapNodeSize.x, MapNodeSize.y];
-            int index = 0;
-            for (int i = 0; i < MapNodeSize.x; i++)
-            {
-                for (int j = 0; j < MapNodeSize.y; j++)
-                {
-                    tileNodes[i, j] = serializedTileNodes[index++];
-                }
-            }
-            serializedTileNodes.Clear();
+                    byte[] binaryData = textAsset.bytes;
 
+                    // 바이너리 데이터를 사용하여 원하는 작업 수행
+                    using (MemoryStream stream = new MemoryStream(binaryData))
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        stream.Position = 0; // 스트림의 시작 위치를 0으로 설정
+                        StageMapData loadedData  = (StageMapData)formatter.Deserialize(stream);
+                        this.nodeSize = loadedData.nodeSize;
+                        this.slopeTreshold = loadedData.slopeTreshold;
+                        this.spawnPosition = loadedData.spawnPosition;
+                        this.MapNodeSize = loadedData.MapNodeSize;
+                        this.Mapstartposition  = loadedData.Mapstartposition;
+                        this.serializedTileNodes = loadedData.serializedTileNodes;
+                    }
+                }
+                else
+                {
+                    Debug.LogError("파일을 찾을 수 없습니다: " + _fileName);
+                    return false;
+                }
+                
+                tileNodes = new InfoNode[MapNodeSize.x, MapNodeSize.y];
+                int index = 0;
+                for (int i = 0; i < MapNodeSize.x; i++)
+                {
+                    for (int j = 0; j < MapNodeSize.y; j++)
+                    {
+                        tileNodes[i, j] = serializedTileNodes[index++];
+                    }
+                }
+                serializedTileNodes.Clear();
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                Debug.LogError($"파일을 찾을 수 없습니다: {ex.Message}");
+                return false;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Debug.LogError($"접근이 거부되었습니다: {ex.Message}");
+                return false;
+            }
+            catch (SerializationException ex)
+            {
+                Debug.LogError($"역직렬화 오류: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"오류 발생: {ex.Message}");
+                return false;
+            }
         }
+
         #endregion
     }
 }
