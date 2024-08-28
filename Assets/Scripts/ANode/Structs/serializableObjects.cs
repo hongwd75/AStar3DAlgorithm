@@ -69,6 +69,12 @@ namespace ANode
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public static bool operator ==(SerializableVector2Int p1, SerializableVector2Int p2)
         {
             if (ReferenceEquals(p1, null))

@@ -18,6 +18,7 @@ namespace Management
             targetObject = o;
         }
 
+        #region 도착 위치 설정  ----------------------------------------------------------------
         public bool SetDestination(SerializableVector2Int dist)
         {
             pathlist.Clear();
@@ -41,8 +42,9 @@ namespace Management
 
             return false;
         }
+        #endregion
         
-
+        #region 내부 길찾기 알고리즘  -----------------------------------------------------------
         private List<SerializableVector2Int> FindPath(SerializableVector2Int start, SerializableVector2Int goal)
         {
             SearchNodeData startNode =new SearchNodeData(grid.GetNodeAt(start));
@@ -162,6 +164,7 @@ namespace Management
             }
             path.Reverse();
             return path;
-        }        
+        }
+        #endregion
     }
 }
