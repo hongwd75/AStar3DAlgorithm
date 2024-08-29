@@ -14,7 +14,8 @@ namespace Management
         private Vector3 destination = Vector3.zero;
         private Vector3 _dummyNextPos = Vector3.zero; // new가 계속 발생하는 것을 방지하기 위한 변수
         private int currentPathIndex = 0;
-       
+        private InfoNode currentNode = null;
+        
         public AStarPathfindAgent(MapGrid g, IMapObject o)
         {
             grid = g;
@@ -37,16 +38,23 @@ namespace Management
             InfoNode targetGridPos = pathlist[currentPathIndex];
             Vector3 direction = (_dummyNextPos - agent.transform.position).normalized;
 
+            
             // 회전
-            if (agent.lookAt == true)
+            if (direction != Vector3.zero && agent.lookAt == true)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
                 agent.transform.rotation =
                     Quaternion.Slerp(agent.transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
-            }
-
+               
+            }            
+            
+            Vector3 newPostion = Vector3.MoveTowards(agent.transform.position, _dummyNextPos, speed * Time.deltaTime);
+            if (grid.IsPositionOccupied(grid.Vector3ToSerializableVector2Int(newPostion), targetObject) == true)
+            {
+                return RecalculatePath();
+            }   
             // 이동
-            agent.transform.position = Vector3.MoveTowards(agent.transform.position, _dummyNextPos, speed * Time.deltaTime);
+            agent.transform.position = newPostion;
 
             // 다음 지점에 충분히 가까워졌는지 확인
             if (Vector3.Distance(agent.transform.position, _dummyNextPos) < 0.01f)
@@ -54,6 +62,8 @@ namespace Management
                 currentPathIndex++;
                 if (currentPathIndex < pathlist.Count)
                 {
+                    // 장애물이 있으면 가지 말고 다시 경로를 수정한다.
+                    var nextinfo = pathlist[currentPathIndex];
                     _dummyNextPos = pathlist[currentPathIndex].position;
                 }
                 else
@@ -72,6 +82,10 @@ namespace Management
             return true;
         }
 
+        private bool RecalculatePath()
+        {
+            return SetDestination(destination);
+        }
   
         #region 도착 위치 설정  ----------------------------------------------------------------
         private bool setDestination(SerializableVector2Int dist)
@@ -79,7 +93,7 @@ namespace Management
             currentPathIndex = 0;
             if(pathlist != null) pathlist.Clear();
             
-            var info = grid.GetNearWorldObjectNode(targetObject.Position);
+            var info = grid.GetNearWorldObjectNode(targetObject.Position,targetObject);
             if (info != null)
             {
                 pathlist = FindPath(info.grid,dist);
@@ -100,7 +114,7 @@ namespace Management
                 grid = MapGrid.worldGrid;
             }
             
-            var info = grid.GetNearWorldObjectNode(dist);
+            var info = grid.GetNearWorldObjectNode(dist,targetObject);
             if (info != null)
             {
                 destination = dist;
@@ -126,6 +140,7 @@ namespace Management
 
             openSet.Add(startNode);
 
+            int count = 0;
             while (openSet.Count > 0)
             {
                 SearchNodeData current = GetLowestFCostNode(openSet);
@@ -137,7 +152,7 @@ namespace Management
                 openSet.Remove(current);
                 closedSet.Add(current.Node);
 
-                foreach (SearchNodeData neighbor in GetNeighbors(current))
+                foreach (SearchNodeData neighbor in GetNeighbors(current,count == 0))
                 {
                     if (closedSet.Contains(neighbor.Node)) continue;
 
@@ -151,12 +166,14 @@ namespace Management
                             openSet.Add(neighbor);
                     }
                 }
+
+                count++;
             }
 
             return null; // Path not found            
         }
         
-        private List<SearchNodeData> GetNeighbors(SearchNodeData path)
+        private List<SearchNodeData> GetNeighbors(SearchNodeData path,bool start)
         {
             List<SearchNodeData> neighbors = new List<SearchNodeData>();
             for (int x = -1; x <= 1; x++)
@@ -169,6 +186,11 @@ namespace Management
                     if (grid.IsWithinBounds(checkPos))
                     {
                         InfoNode neighbor = grid.GetNodeAt(checkPos);
+
+                        if (start == true && grid.IsPositionOccupied(neighbor.grid, targetObject) == true)
+                        {
+                            continue;
+                        }
                         if (CanMoveTo(path.Node, neighbor))
                         {
                             neighbors.Add(new SearchNodeData(neighbor));

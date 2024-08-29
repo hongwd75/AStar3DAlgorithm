@@ -25,6 +25,12 @@ namespace ANode
         
         [NonSerialized]
         public int holdState = 0;               // 이미 차지하고 있는 객체 ID
+
+
+        public bool isEmpty()
+        {
+            return (holdState == 0 && type == NodeType.walkable);
+        }
     }
 
 

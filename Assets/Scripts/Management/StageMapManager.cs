@@ -9,8 +9,7 @@ namespace Management
 
         private void Start()
         {
-            map = new MapGrid();
-            map.Load("stage.bytes");
+            map = new MapGrid("stage.bytes");
         }
     }
 }

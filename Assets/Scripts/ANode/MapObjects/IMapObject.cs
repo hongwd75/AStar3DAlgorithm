@@ -17,7 +17,7 @@ namespace ANode.MapObjects
         bool CanMove { get; } // 이동 가능한가
         bool CanDestroy { get; } // 파괴 가능한가.
         bool IsMoving { get; }
-        
+
         int ID { get; }      // 생성된 객체 ID        
         ObjectType Type { get; }
         TileObjectInfo TileObjectInfo { get; } // 객체 정보
