@@ -38,8 +38,12 @@ namespace Management
             Vector3 direction = (_dummyNextPos - agent.transform.position).normalized;
 
             // 회전
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+            if (agent.lookAt == true)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                agent.transform.rotation =
+                    Quaternion.Slerp(agent.transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+            }
 
             // 이동
             agent.transform.position = Vector3.MoveTowards(agent.transform.position, _dummyNextPos, speed * Time.deltaTime);
@@ -54,9 +58,12 @@ namespace Management
                 }
                 else
                 {
-                    direction = (destination - agent.transform.position).normalized;
-                    targetRotation = Quaternion.LookRotation(direction);
-                    agent.transform.rotation = targetRotation;
+                    if (agent.lookAt == true)
+                    {
+                        direction = (destination - agent.transform.position).normalized;
+                        Quaternion targetRotation = Quaternion.LookRotation(direction);
+                        agent.transform.rotation = targetRotation;
+                    }
                     currentPathIndex = 0;
                     pathlist.Clear();
                 }
