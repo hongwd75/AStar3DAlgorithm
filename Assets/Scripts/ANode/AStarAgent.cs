@@ -7,6 +7,7 @@ namespace ANode
 {
     public class AStarAgent : MonoBehaviour
     {
+        public bool lookAt = true;
         public float speed = 0.5f;
         public float rotatespeed = 0.5f;
         public IMapObject ObjectInfo;

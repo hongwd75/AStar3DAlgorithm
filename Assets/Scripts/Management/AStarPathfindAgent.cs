@@ -52,6 +52,14 @@ namespace Management
                 {
                     _dummyNextPos = pathlist[currentPathIndex].position;
                 }
+                else
+                {
+                    direction = (destination - agent.transform.position).normalized;
+                    targetRotation = Quaternion.LookRotation(direction);
+                    agent.transform.rotation = targetRotation;
+                    currentPathIndex = 0;
+                    pathlist.Clear();
+                }
             }
 
             return true;
